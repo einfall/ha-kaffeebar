@@ -1,0 +1,320 @@
+{
+  "title": "HA Kaffeebar",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Kaffeemaschine hinzufügen",
+        "description": "Wähle den Leistungssensor deiner Kaffeemaschine in W oder kW. Espressobezüge werden beim Phasenende gezählt. Live-Status und Milch-/Dampfphasen sind Schätzungen anhand der Leistung. Die Grenzwerte kannst du nach dem Hinzufügen konfigurieren. Rocket Appartamento ist das erprobte Ausgangsprofil dieser Installation; Individuell ist eine Kopie als Startpunkt, kein universell getestetes Maschinenprofil.",
+        "data": {
+          "name": "Name der Kaffeemaschine",
+          "power_entity": "Leistungssensor",
+          "profile": "Startprofil"
+        }
+      },
+      "reconfigure": {
+        "title": "Maschine und Leistungssensor ändern",
+        "description": "Zähler, Profile und Protokoll bleiben erhalten.",
+        "data": {
+          "name": "Name der Kaffeemaschine",
+          "power_entity": "Leistungssensor"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Bitte einen Namen angeben.",
+      "invalid_power_sensor": "Bitte einen Leistungssensor auswählen.",
+      "sensor_not_found": "Der ausgewählte Sensor ist nicht vorhanden.",
+      "invalid_power_unit": "Der Sensor muss die Einheit W oder kW haben.",
+      "sensor_not_numeric": "Der Sensor muss aktuell einen gültigen Zahlenwert liefern.",
+      "busy": "Erst den laufenden Vorgang oder die Aufnahme beenden.",
+      "source_already_configured": "Dieser Leistungssensor wird bereits verwendet."
+    },
+    "abort": {
+      "already_configured": "Für diesen Leistungssensor ist bereits eine Kaffee-Erkennung eingerichtet.",
+      "invalid_import": "Die vorbereitete Übernahme enthält ungültige Einstellungen.",
+      "invalid_power_sensor": "Bitte einen Leistungssensor auswählen.",
+      "invalid_options": "Alle Werte müssen positive, endliche Zahlen sein. Jede untere Grenze muss kleiner als die zugehörige obere Grenze sein. Die Grenze für das Phasenende muss unter der Grenze für den Phasenbeginn liegen. Die oberen Pumpenleistungsgrenzen müssen mindestens der Leistungsgrenze für den Phasenbeginn entsprechen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Erkennungsprofil wählen",
+        "description": "Quelle: {power_entity}. Rocket Appartamento bewahrt die bisherigen Werte. Neue Profile kopieren das gewählte Profil. Expertenänderungen am Rocket-Profil werden als eigene Kopie gespeichert. Kalibrierung erfolgt über die Entitäten des Geräts. Zusatzfunktionen und Profil-Import/Export sind über die Aktion auswählbar.",
+        "data": {
+          "profile": "Profil",
+          "new_profile_name": "Neues Profil als Kopie anlegen (optional)",
+          "advanced": "Experten-Grenzen bearbeiten",
+          "action": "Aktion"
+        }
+      },
+      "milk": {
+        "title": "Milch- und Dampfphasen einstellen",
+        "description": "Gezählt werden geschätzte Milch-/Dampfphasen nach einem erkannten Espresso. Reines Heizen kann ähnlich aussehen. Die Anzahl der Phasen entspricht nicht zuverlässig der Anzahl von Milchportionen.",
+        "data": {
+          "milk_pump_min_w": "Milch-/Dampfpumpe: untere Leistungsgrenze",
+          "milk_pump_max_w": "Milch-/Dampfpumpe: obere Leistungsgrenze",
+          "milk_pump_min_s": "Milchphase mit Pumpenmerkmal: minimale Dauer",
+          "milk_pump_max_s": "Milchphase mit Pumpenmerkmal: maximale Dauer",
+          "milk_heating_min_w": "Milchphase durch Heizen: minimale Spitzenleistung",
+          "milk_heating_min_s": "Milchphase durch Heizen: minimale Dauer",
+          "milk_heating_max_s": "Milchphase durch Heizen: maximale Dauer",
+          "milk_after_espresso_s": "Zeitfenster für Milchphasen nach einem Espresso"
+        },
+        "data_description": {
+          "milk_pump_min_w": "Die untere Grenze ist exklusiv; die obere Grenze ist inklusive.",
+          "milk_after_espresso_s": "Der Beginn der Milchphase muss innerhalb dieses Zeitfensters nach dem Espresso-Ende liegen."
+        }
+      },
+      "espresso": {
+        "title": "Espresso-Grenzen (Experten)",
+        "data": {
+          "off_w": "Leistungsgrenze für das Phasenende",
+          "phase_start_w": "Leistungsgrenze für den Phasenbeginn",
+          "espresso_pump_min_w": "Espresso-Pumpe: minimale Leistung",
+          "espresso_pump_max_w": "Espresso-Pumpe: maximale Leistung",
+          "espresso_min_s": "Espresso: minimale Dauer",
+          "espresso_max_s": "Espresso: maximale Dauer",
+          "live_pump_min_w": "Zusätzlicher Live-Pumpenbereich: untere Grenze",
+          "live_pump_max_w": "Zusätzlicher Live-Pumpenbereich: obere Grenze",
+          "tick_seconds": "Intervall der Live-Statusprüfung"
+        },
+        "data_description": {
+          "off_w": "Eine Phase endet bei einer gemessenen Leistung unter dieser Grenze.",
+          "phase_start_w": "Eine Phase beginnt ab dieser gemessenen Leistung.",
+          "live_pump_min_w": "Die untere Grenze ist exklusiv: Die Leistung muss größer sein.",
+          "tick_seconds": "Aktualisiert die Zeitprüfung; erzeugt keine zusätzlichen Leistungsmessungen."
+        }
+      },
+      "features": {
+        "title": "Messqualität, Milch und Energie",
+        "description": "Milch ohne Espresso bleibt eine Schätzung aus dem Milch-Pumpenbereich; reine Heizleistung zählt dabei nicht. Große Messlücken verwerfen laufende Vorgänge. Ein leeres Energiefeld nutzt nur bei der bisherigen Kaffeemaschine den bekannten Energiesensor; für andere Maschinen eine Entität angeben. Energie kann deaktiviert werden. Diese Zusatzoptionen gelten pro Maschine, nicht pro Grenzwertprofil. Cappuccino-Rezept: Jede Gruppe beginnt mit einem Espresso. Genau die eingestellte Anzahl von Milchphasen ergibt die eingestellte Tassenanzahl (Standard: 1 Espresso + 2 Milchphasen → 2 Cappuccino). Während des Gruppierungsfensters ist die Zuordnung vorläufig. Tageswerte zählen erst abgeschlossene Gruppen. Änderungen berechnen das verfügbare Protokoll neu; keine Volumenmessung oder gesicherte Getränke-Erkennung. Rezeptregel wählbar: „Genau“ verwirft Gruppen mit zusätzlichen Milchphasen; „Mindestens“ ordnet weiterhin die feste Tassenanzahl zu. Heute/Gestern bleiben nach Protokollablauf erhalten.",
+        "data": {
+          "stale_after_s": "Messung gilt als veraltet nach",
+          "max_gap_s": "Maximale Messlücke während eines Vorgangs",
+          "session_gap_s": "Zeitfenster für zusammengehörige Vorgänge",
+          "standalone_milk": "Milch ohne vorherigen Espresso schätzen",
+          "energy_enabled": "Energie je Vorgang erfassen",
+          "energy_entity": "Energiesensor in Wh/kWh (optional)",
+          "cappuccino_enabled": "Cappuccino nach Rezept zuordnen",
+          "cappuccino_milk_phases": "Milchphasen je Espresso für das Rezept",
+          "cappuccino_cups": "Cappuccino-Tassen je passender Gruppe",
+          "cappuccino_match_mode": "Milchphasen: genau oder mindestens"
+        }
+      },
+      "import_profile": {
+        "title": "Profil importieren",
+        "description": "JSON einfügen und einen neuen Namen wählen. Wird als Kopie gespeichert und nicht aktiviert. Das Originalprofil bleibt erhalten.",
+        "data": {
+          "import_name": "Name der neuen Kopie",
+          "profile_json": "Profil-JSON"
+        }
+      },
+      "export_profile": {
+        "title": "Profil exportieren",
+        "description": "Kopiere dieses JSON. Es enthält nur Name und Grenzwerte, keine Sensor-IDs oder persönlichen Aufzeichnungen. Zusatzoptionen für Messqualität/Milch/Energie werden separat pro Maschine eingestellt.\n\n```json\n{profile_json}\n```"
+      }
+    },
+    "error": {
+      "invalid_options": "Alle Werte müssen positive, endliche Zahlen sein. Jede untere Grenze muss kleiner als die zugehörige obere Grenze sein. Die Grenze für das Phasenende muss unter der Grenze für den Phasenbeginn liegen. Die oberen Pumpenleistungsgrenzen müssen mindestens der Leistungsgrenze für den Phasenbeginn entsprechen.",
+      "invalid_profile": "Profilname ungültig, bereits vorhanden oder Profilgrenze erreicht.",
+      "busy": "Erst den laufenden Vorgang oder die Aufnahme beenden.",
+      "invalid_features": "Ungültige Zeitgrenzen; maximale Messlücke darf das Veraltungsfenster nicht überschreiten. Rezeptmengen müssen ganze Zahlen von 1 bis 10 sein.",
+      "invalid_energy_sensor": "Einen verfügbaren numerischen Energiesensor in Wh oder kWh wählen.",
+      "invalid_profile_import": "Ungültiges Profil-JSON, Name bereits vorhanden oder Profilgrenze erreicht."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "zubereitungen": {
+        "name": "Zubereitungen"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "off": "Aus",
+          "ready": "Bereit",
+          "heating": "Heizen",
+          "espresso": "Espresso (vermutet)",
+          "milk": "Milch/Dampf (geschätzt)",
+          "unclear": "Bezug unklar",
+          "unknown": "Unbekannt"
+        }
+      },
+      "espresso_heute": {
+        "name": "Espresso heute"
+      },
+      "espresso_gestern": {
+        "name": "Espresso gestern"
+      },
+      "milchschaum_heute": {
+        "name": "Milchschaum heute"
+      },
+      "milchschaum_gestern": {
+        "name": "Milchschaum gestern"
+      },
+      "milchphasen_gesamt": {
+        "name": "Milchphasen gesamt"
+      },
+      "last_espresso": {
+        "name": "Letzter Espresso"
+      },
+      "last_milk": {
+        "name": "Letzte Milchphase"
+      },
+      "phase_duration": {
+        "name": "Laufende Dauer"
+      },
+      "journal": {
+        "name": "Ereignisprotokoll"
+      },
+      "calibration": {
+        "name": "Kalibrierung",
+        "state": {
+          "idle": "Bereit für Aufnahme",
+          "recording": "Aufnahme läuft",
+          "ready": "Profilvorschlag verfügbar"
+        }
+      },
+      "quality": {
+        "name": "Messqualität",
+        "state": {
+          "fresh": "Aktuelle Meldung",
+          "sparse": "Seltene Meldungen",
+          "stale": "Messung veraltet",
+          "missing": "Messung fehlt"
+        }
+      },
+      "report_age": {
+        "name": "Messalter"
+      },
+      "report_interval": {
+        "name": "Meldeintervall"
+      },
+      "preparation": {
+        "name": "Letzte Zubereitung"
+      },
+      "evidence": {
+        "name": "Erkennungsqualität",
+        "state": {
+          "matching": "Passendes Muster",
+          "estimated": "Geschätzt",
+          "unclear": "Unklar",
+          "corrected": "Nachträglich korrigiert",
+          "none": "Noch kein Vorgang"
+        }
+      },
+      "last_energy": {
+        "name": "Letzte Vorgangsenergie"
+      },
+      "profile_export": {
+        "name": "Profilexport"
+      },
+      "guide": {
+        "name": "Kalibrierungsassistent",
+        "state": {
+          "espresso": "Espresso aufnehmen",
+          "milk": "Milch aufnehmen",
+          "heating": "Aufwärmen aufnehmen",
+          "rinsing": "Spülen aufnehmen",
+          "complete": "Referenzen vollständig"
+        }
+      },
+      "cappuccino_today": {
+        "name": "Cappuccino heute (Rezept)"
+      },
+      "cappuccino_yesterday": {
+        "name": "Cappuccino gestern (Rezept)"
+      },
+      "cappuccino_journal": {
+        "name": "Cappuccino im Protokoll (Rezept)"
+      },
+      "cappuccino_pending": {
+        "name": "Cappuccino vorläufig (Rezept)"
+      },
+      "cappuccino_recipe": {
+        "name": "Cappuccino-Rezept"
+      },
+      "cappuccino_total": {
+        "name": "Cappuccino gesamt (Rezept)"
+      },
+      "review_version": {
+        "name": "Auswertung-Version"
+      }
+    },
+    "binary_sensor": {
+      "is_espresso": {
+        "name": "Espresso aktiv (vermutet)"
+      },
+      "is_milchschaum": {
+        "name": "Milchschaum aktiv (geschätzt)"
+      }
+    },
+    "select": {
+      "profile": {
+        "name": "Profil"
+      },
+      "event": {
+        "name": "Vorgang"
+      },
+      "calibration_type": {
+        "name": "Kalibrierungstyp",
+        "state": {
+          "espresso": "Espresso",
+          "milk": "Milchschaum",
+          "heating": "Aufwärmen",
+          "rinsing": "Spülen",
+          "unknown": "Unbekannt",
+          "unclear": "Unklarer Bezug"
+        }
+      },
+      "correction_type": {
+        "name": "Korrekturtyp",
+        "state": {
+          "espresso": "Espresso",
+          "milk": "Milchschaum",
+          "heating": "Aufwärmen",
+          "rinsing": "Spülen",
+          "unknown": "Unbekannt",
+          "unclear": "Unklarer Bezug"
+        }
+      }
+    },
+    "button": {
+      "calibration_start": {
+        "name": "Kalibrierung starten"
+      },
+      "calibration_stop": {
+        "name": "Kalibrierung speichern"
+      },
+      "calibration_cancel": {
+        "name": "Kalibrierung abbrechen"
+      },
+      "calibration_profile": {
+        "name": "Kalibriertes Profil speichern"
+      },
+      "correct_event": {
+        "name": "Korrektur anwenden"
+      },
+      "calibration_guided": {
+        "name": "Geführte Aufnahme starten"
+      }
+    }
+  },
+  "selector": {
+    "options_action": {
+      "options": {
+        "configure": "Profil auswählen / bearbeiten",
+        "features": "Messqualität, Milch und Energie",
+        "import_profile": "Profil importieren",
+        "export_profile": "Profil exportieren"
+      }
+    },
+    "cappuccino_match_mode": {
+      "options": {
+        "exact": "Genau die eingestellte Anzahl",
+        "at_least": "Mindestens die eingestellte Anzahl"
+      }
+    }
+  }
+}

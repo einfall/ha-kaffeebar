@@ -1,0 +1,320 @@
+{
+  "title": "HA Kaffeebar",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a coffee machine",
+        "description": "Choose your coffee machine’s power sensor in W or kW. Espresso shots are counted at the end of a phase. Live status and milk/steam phases are estimates based on power. You can configure the thresholds after adding the machine. Rocket Appartamento is the original profile from this installation; Custom is a copied starting point, not a universally validated machine preset.",
+        "data": {
+          "name": "Coffee machine name",
+          "power_entity": "Power sensor",
+          "profile": "Initial profile"
+        }
+      },
+      "reconfigure": {
+        "title": "Change machine and power sensor",
+        "description": "Counters, profiles and journal are retained.",
+        "data": {
+          "name": "Coffee machine name",
+          "power_entity": "Power sensor"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Enter an appliance name.",
+      "invalid_power_sensor": "Select a power sensor.",
+      "sensor_not_found": "The selected sensor does not exist.",
+      "invalid_power_unit": "The sensor must use W or kW.",
+      "sensor_not_numeric": "The sensor must currently report a valid number.",
+      "busy": "Finish the current phase or recording first.",
+      "source_already_configured": "This power sensor is already used."
+    },
+    "abort": {
+      "already_configured": "A coffee detector is already configured for this power sensor.",
+      "invalid_import": "The prepared migration contains invalid configuration.",
+      "invalid_power_sensor": "Select a power sensor.",
+      "invalid_options": "All values must be positive, finite numbers. Each lower threshold must be below its corresponding upper threshold. The end-of-phase threshold must be below the start-of-phase threshold. The upper pump power thresholds must be at least the start-of-phase power threshold."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Choose detection profile",
+        "description": "Source: {power_entity}. Rocket Appartamento preserves the original settings. New profiles copy the selected profile; changes to Rocket are saved as a separate copy. Use the device entities for calibration.Select an action for diagnostics/settings or profile import/export.",
+        "data": {
+          "profile": "Profile",
+          "new_profile_name": "Create a named copy (optional)",
+          "advanced": "Edit advanced thresholds",
+          "action": "Action"
+        }
+      },
+      "milk": {
+        "title": "Configure milk and steam phases",
+        "description": "Counts estimated milk/steam phases after a detected espresso. Ordinary heating can look similar. The number of phases does not reliably represent the number of milk servings.",
+        "data": {
+          "milk_pump_min_w": "Milk/steam pump: lower power threshold",
+          "milk_pump_max_w": "Milk/steam pump: upper power threshold",
+          "milk_pump_min_s": "Milk phase with pump evidence: minimum duration",
+          "milk_pump_max_s": "Milk phase with pump evidence: maximum duration",
+          "milk_heating_min_w": "Milk phase from heating: minimum peak power",
+          "milk_heating_min_s": "Milk phase from heating: minimum duration",
+          "milk_heating_max_s": "Milk phase from heating: maximum duration",
+          "milk_after_espresso_s": "Time window for milk phases after an espresso"
+        },
+        "data_description": {
+          "milk_pump_min_w": "The lower threshold is exclusive; the upper threshold is inclusive.",
+          "milk_after_espresso_s": "The milk phase must start within this time window after the espresso ends."
+        }
+      },
+      "espresso": {
+        "title": "Espresso thresholds (advanced)",
+        "data": {
+          "off_w": "Power threshold for the end of a phase",
+          "phase_start_w": "Power threshold for the start of a phase",
+          "espresso_pump_min_w": "Espresso pump: minimum power",
+          "espresso_pump_max_w": "Espresso pump: maximum power",
+          "espresso_min_s": "Espresso: minimum duration",
+          "espresso_max_s": "Espresso: maximum duration",
+          "live_pump_min_w": "Additional live pump range: lower threshold",
+          "live_pump_max_w": "Additional live pump range: upper threshold",
+          "tick_seconds": "Live status update interval"
+        },
+        "data_description": {
+          "off_w": "A phase ends when measured power falls below this threshold.",
+          "phase_start_w": "A phase starts at or above this measured power.",
+          "live_pump_min_w": "The lower threshold is exclusive: power must exceed it.",
+          "tick_seconds": "Updates duration checks; does not create additional power measurements."
+        }
+      },
+      "features": {
+        "title": "Measurement quality, milk and energy",
+        "description": "Standalone milk is estimated from milk-pump evidence, never heater power alone. Long measurement gaps discard partial operations. Blank energy source uses the known sensor only for the legacy machine; select one for other machines. Energy can be disabled. These features are per machine, not per threshold profile.Cappuccino recipe: Each group starts with one espresso. Exactly the configured number of milk phases yields the configured cups (default: 1 espresso + 2 milk phases → 2 cappuccinos). Assignments remain provisional during the grouping window. Daily counts include completed groups only. Changes reinterpret the retained journal; no volume measurement or assured drink identification. Choose exact or minimum milk-phase matching. Minimum mode assigns the fixed cups even with additional milk phases. Daily counts survive journal expiry.",
+        "data": {
+          "stale_after_s": "Report becomes stale after",
+          "max_gap_s": "Maximum report gap during an operation",
+          "session_gap_s": "Window for related operations",
+          "standalone_milk": "Estimate milk without preceding espresso",
+          "energy_enabled": "Track energy per operation",
+          "energy_entity": "Energy sensor in Wh/kWh (optional)",
+          "cappuccino_enabled": "Assign cappuccino cups from recipe",
+          "cappuccino_milk_phases": "Milk phases per espresso required by recipe",
+          "cappuccino_cups": "Cappuccino cups per matching group",
+          "cappuccino_match_mode": "Milk phases: exactly or at least"
+        }
+      },
+      "import_profile": {
+        "title": "Import profile",
+        "description": "Paste JSON and choose a new name. Saves a copy without activating or replacing the original.",
+        "data": {
+          "import_name": "New copy name",
+          "profile_json": "Profile JSON"
+        }
+      },
+      "export_profile": {
+        "title": "Export profile",
+        "description": "Copy this JSON. Only name and thresholds are included; no entity IDs or personal recordings. Quality/milk/energy settings are configured separately per machine.\n\n```json\n{profile_json}\n```"
+      }
+    },
+    "error": {
+      "invalid_options": "All values must be positive, finite numbers. Each lower threshold must be below its corresponding upper threshold. The end-of-phase threshold must be below the start-of-phase threshold. The upper pump power thresholds must be at least the start-of-phase power threshold.",
+      "invalid_profile": "Invalid or duplicate profile name, or profile limit reached.",
+      "busy": "Finish the current phase or recording first.",
+      "invalid_features": "Invalid durations; maximum gap must not exceed the stale timeout.Recipe quantities must be integers from 1 to 10.",
+      "invalid_energy_sensor": "Select an available numeric Wh or kWh energy sensor.",
+      "invalid_profile_import": "Invalid profile JSON, duplicate name, or profile limit reached."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "zubereitungen": {
+        "name": "Espresso shots"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "off": "Off",
+          "ready": "Ready",
+          "heating": "Heating",
+          "espresso": "Espresso (estimated)",
+          "milk": "Milk/steam (estimated)",
+          "unclear": "Unclear shot",
+          "unknown": "Unknown"
+        }
+      },
+      "espresso_heute": {
+        "name": "Espresso today"
+      },
+      "espresso_gestern": {
+        "name": "Espresso yesterday"
+      },
+      "milchschaum_heute": {
+        "name": "Milk phases today"
+      },
+      "milchschaum_gestern": {
+        "name": "Milk phases yesterday"
+      },
+      "milchphasen_gesamt": {
+        "name": "Milk phases total"
+      },
+      "last_espresso": {
+        "name": "Last espresso"
+      },
+      "last_milk": {
+        "name": "Last milk phase"
+      },
+      "phase_duration": {
+        "name": "Phase duration"
+      },
+      "journal": {
+        "name": "Activity journal"
+      },
+      "calibration": {
+        "name": "Calibration",
+        "state": {
+          "idle": "Ready to record",
+          "recording": "Recording",
+          "ready": "Profile proposal available"
+        }
+      },
+      "quality": {
+        "name": "Measurement quality",
+        "state": {
+          "fresh": "Recent report",
+          "sparse": "Sparse reports",
+          "stale": "Stale report",
+          "missing": "Missing report"
+        }
+      },
+      "report_age": {
+        "name": "Report age"
+      },
+      "report_interval": {
+        "name": "Report interval"
+      },
+      "preparation": {
+        "name": "Last preparation group"
+      },
+      "evidence": {
+        "name": "Detection evidence",
+        "state": {
+          "matching": "Matching pattern",
+          "estimated": "Estimated",
+          "unclear": "Unclear",
+          "corrected": "Manually corrected",
+          "none": "No operation yet"
+        }
+      },
+      "last_energy": {
+        "name": "Last operation energy"
+      },
+      "profile_export": {
+        "name": "Profile export"
+      },
+      "guide": {
+        "name": "Calibration guide",
+        "state": {
+          "espresso": "Record espresso",
+          "milk": "Record milk",
+          "heating": "Record heating",
+          "rinsing": "Record rinsing",
+          "complete": "References complete"
+        }
+      },
+      "cappuccino_today": {
+        "name": "Cappuccino today (recipe)"
+      },
+      "cappuccino_yesterday": {
+        "name": "Cappuccino yesterday (recipe)"
+      },
+      "cappuccino_journal": {
+        "name": "Cappuccino in journal (recipe)"
+      },
+      "cappuccino_pending": {
+        "name": "Provisional cappuccino (recipe)"
+      },
+      "cappuccino_recipe": {
+        "name": "Cappuccino recipe"
+      },
+      "cappuccino_total": {
+        "name": "Cappuccino total (recipe)"
+      },
+      "review_version": {
+        "name": "Review version"
+      }
+    },
+    "binary_sensor": {
+      "is_espresso": {
+        "name": "Espresso active (estimated)"
+      },
+      "is_milchschaum": {
+        "name": "Milk/steam active (estimated)"
+      }
+    },
+    "select": {
+      "profile": {
+        "name": "Profile"
+      },
+      "event": {
+        "name": "Event"
+      },
+      "calibration_type": {
+        "name": "Calibration type",
+        "state": {
+          "espresso": "Espresso",
+          "milk": "Milk foam",
+          "heating": "Heating",
+          "rinsing": "Rinsing",
+          "unknown": "Unknown",
+          "unclear": "Unclear shot"
+        }
+      },
+      "correction_type": {
+        "name": "Correction type",
+        "state": {
+          "espresso": "Espresso",
+          "milk": "Milk foam",
+          "heating": "Heating",
+          "rinsing": "Rinsing",
+          "unknown": "Unknown",
+          "unclear": "Unclear shot"
+        }
+      }
+    },
+    "button": {
+      "calibration_start": {
+        "name": "Start calibration"
+      },
+      "calibration_stop": {
+        "name": "Save recording"
+      },
+      "calibration_cancel": {
+        "name": "Cancel calibration"
+      },
+      "calibration_profile": {
+        "name": "Save calibrated profile"
+      },
+      "correct_event": {
+        "name": "Apply correction"
+      },
+      "calibration_guided": {
+        "name": "Start guided recording"
+      }
+    }
+  },
+  "selector": {
+    "options_action": {
+      "options": {
+        "configure": "Choose/edit profile",
+        "features": "Quality, milk and energy settings",
+        "import_profile": "Import profile",
+        "export_profile": "Export profile"
+      }
+    },
+    "cappuccino_match_mode": {
+      "options": {
+        "exact": "Exactly the configured count",
+        "at_least": "At least the configured count"
+      }
+    }
+  }
+}
